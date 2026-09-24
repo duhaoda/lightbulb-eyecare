@@ -81,20 +81,22 @@ MIT 许可证要求在所有副本中保留原始版权声明与许可声明—�
 
 ## 4. 本项目使用的第三方开源依赖及许可证
 
+> 下表版本号与根目录 `Directory.Packages.props` 保持一致。**依赖升级（比如 Dependabot 的 PR）合并之后，请同步更新这两张表**，否则本文件会与代码对不上。
+
 ### 4.1 运行时依赖（会进入发布产物）
 
 | 包 | 版本 | 许可证 |
 |---|---|---|
-| Avalonia / Avalonia.Desktop | 12.1.1 | MIT |
+| Avalonia / Avalonia.Desktop | 12.1.3 | MIT |
 | Cogwheel | 2.1.1 | MIT |
 | CommunityToolkit.Mvvm | 8.4.2 | MIT |
 | Deorcify | 2.0.1 | MIT |
 | DialogHost.Avalonia | 0.12.3 | MIT |
 | JsonExtensions | 1.2.3 | MIT |
-| Markdig | 1.3.2 | BSD-2-Clause |
-| Material.Avalonia | 3.16.1 | MIT |
+| Markdig | 1.4.0 | BSD-2-Clause |
+| Material.Avalonia | 3.20.0 | MIT |
 | Material.Icons.Avalonia | 3.0.2 | MIT |
-| Microsoft.Extensions.DependencyInjection | 10.0.11 | MIT |
+| Microsoft.Extensions.DependencyInjection | 10.0.12 | MIT |
 | Onova | 2.6.13 | MIT |
 | PowerKit | 2.3.1 | MIT |
 
@@ -105,10 +107,10 @@ MIT 许可证要求在所有副本中保留原始版权声明与许可声明—�
 | CSharpier.MsBuild | 1.3.0 | MIT |
 | coverlet.collector | 10.0.1 | MIT |
 | GitHubActionsTestLogger | 3.0.5 | MIT |
-| Microsoft.NET.Test.Sdk | 18.9.0 | MIT |
+| Microsoft.NET.Test.Sdk | 18.10.1 | MIT |
 | xunit | 2.9.3 | Apache-2.0 |
 | xunit.runner.visualstudio | 4.0.0 | Apache-2.0 |
-| **FluentAssertions** | **8.10.0** | **Xceed Community License（仅限非商业用途）** |
+| **FluentAssertions** | **8.11.0** | **Xceed Community License（仅限非商业用途）** |
 
 > ⚠️ 关于 FluentAssertions：从 8.0 版本起，它由 Xceed Software 以**专有社区许可**发布，仅允许非商业用途（明确包含“用于开发或测试开源项目”）。本项目属于开源非商业项目，符合其许可范围；且它**仅用于测试项目，不会打包进任何发布产物**。若你打算基于本仓库做商业用途，请自行将其替换为 MIT 许可的断言库（如 Shouldly）或购买 Xceed 商业许可。
 
