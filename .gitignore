@@ -1,0 +1,13 @@
+# User-specific files
+.vs/
+.idea/
+*.suo
+*.user
+
+# Build results
+bin/
+obj/
+Installer/Source/
+
+# Test results
+TestResults/

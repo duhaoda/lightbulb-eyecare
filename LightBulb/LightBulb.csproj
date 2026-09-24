@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>../favicon.ico</ApplicationIcon>
+    <PublishTrimmed>true</PublishTrimmed>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="../favicon.ico" Link="favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Cogwheel" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CSharpier.MsBuild" PrivateAssets="all" />
+    <PackageReference Include="Deorcify" />
+    <PackageReference Include="DialogHost.Avalonia" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Material.Avalonia" />
+    <PackageReference Include="Material.Icons.Avalonia" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Onova" />
+    <PackageReference Include="PowerKit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../LightBulb.Core/LightBulb.Core.csproj" />
+    <ProjectReference Include="../LightBulb.PlatformInterop/LightBulb.PlatformInterop.csproj" />
+  </ItemGroup>
+</Project>

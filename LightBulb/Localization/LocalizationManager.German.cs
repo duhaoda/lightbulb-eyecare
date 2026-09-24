@@ -1,0 +1,181 @@
+using System.Collections.Generic;
+
+namespace LightBulb.Localization;
+
+public partial class LocalizationManager
+{
+    private static readonly IReadOnlyDictionary<string, string> GermanLocalization = new Dictionary<
+        string,
+        string
+    >
+    {
+        [nameof(SunsetLabel)] = "Untergang",
+        [nameof(SunriseLabel)] = "Aufgang",
+        [nameof(SunsetTransitionTooltip)] =
+            "Sonnenuntergangsübergang beginnt um **{0}** und endet um **{1}**",
+        [nameof(SunriseTransitionTooltip)] =
+            "Sonnenaufgangsübergang beginnt um **{0}** und endet um **{1}**",
+        [nameof(OffsetTooltipHeader)] =
+            "Aktuelle Temperatur- und Helligkeitswerte werden durch einen Versatz angepasst:",
+        [nameof(TemperatureOffsetLabel)] = "Temperaturversatz:",
+        [nameof(BrightnessOffsetLabel)] = "Helligkeitsversatz:",
+        [nameof(ClickToResetLabel)] = "Zum Zurücksetzen klicken",
+        [nameof(OffsetLabel)] = "Versatz",
+        [nameof(ToggleLightBulbTooltip)] = "LightBulb ein-/ausschalten",
+        [nameof(HideToTrayTooltip)] = "LightBulb in den Infobereich minimieren",
+        [nameof(PreviewText)] = "VORSCHAU",
+        [nameof(StopPreviewTooltip)] = "Vorschau beenden",
+        [nameof(StartPreviewTooltip)] = "24-Stunden-Zyklus vorschauen",
+        [nameof(SettingsText)] = "EINSTELLUNGEN",
+        [nameof(OpenSettingsTooltip)] = "Einstellungen öffnen",
+        [nameof(ResetButton)] = "ZURÜCKSETZEN",
+        [nameof(ResetTooltip)] = "Alle Einstellungen auf die Standardwerte zurücksetzen",
+        [nameof(CancelButton)] = "ABBRECHEN",
+        [nameof(SaveButton)] = "SPEICHERN",
+        [nameof(GeneralTabName)] = "Allgemein",
+        [nameof(LocationTabName)] = "Standort",
+        [nameof(AdvancedTabName)] = "Erweitert",
+        [nameof(AppWhitelistTabName)] = "App-Whitelist",
+        [nameof(HotkeysTabName)] = "Tastenkombinationen",
+        [nameof(ThemeLabel)] = "Design",
+        [nameof(ThemeTooltip)] = "Bevorzugtes Oberflächendesign",
+        [nameof(LanguageLabel)] = "Sprache",
+        [nameof(LanguageTooltip)] = "Bevorzugte Sprache der Benutzeroberfläche",
+        [nameof(StartWithWindowsLabel)] = "Mit Windows starten",
+        [nameof(StartWithWindowsTooltip)] = "LightBulb beim Windows-Start automatisch starten",
+        [nameof(AutoUpdateLabel)] = "Automatische Updates",
+        [nameof(AutoUpdateTooltip)] = "LightBulb automatisch auf die neueste Version aktualisieren",
+        [nameof(DefaultToDayConfigLabel)] = "Zur Tageskonfiguration zurückkehren",
+        [nameof(DefaultToDayConfigTooltip)] =
+            "Wenn LightBulb deaktiviert oder pausiert ist, die konfigurierte Tagestemperatur und -helligkeit anstelle des Standard-Monitor-Gammas wiederherstellen",
+        [nameof(PauseWhenFullscreenLabel)] = "Bei Vollbild pausieren",
+        [nameof(PauseWhenFullscreenTooltip)] =
+            "LightBulb pausieren, wenn ein Vollbildfenster im Vordergrund ist",
+        [nameof(GammaSmoothingLabel)] = "Gamma-Glättung",
+        [nameof(GammaSmoothingTooltip)] =
+            "Beim Ein- oder Ausschalten von LightBulb langsam übergehen, um den Augen Zeit zur Anpassung zu geben",
+        [nameof(GammaPollingLabel)] = "Gamma-Abfrage",
+        [nameof(GammaPollingTooltip)] =
+            "Monitor-Gamma in regelmäßigen Abständen auffrischen, um andere Programme daran zu hindern, es zu überschreiben",
+        [nameof(DayTemperatureLabel)] = "Tages-Farbtemperatur:",
+        [nameof(DayTemperatureTooltip)] = "Farbtemperatur tagsüber",
+        [nameof(NightTemperatureLabel)] = "Nacht-Farbtemperatur:",
+        [nameof(NightTemperatureTooltip)] = "Farbtemperatur nachts",
+        [nameof(DayBrightnessLabel)] = "Tageshelligkeit:",
+        [nameof(DayBrightnessTooltip)] = """
+            Helligkeit tagsüber
+
+            Diese Helligkeitseinstellung wirkt auf das Farbgamma, nicht auf die tatsächliche Bildschirmhelligkeit.
+            Wenn Ihr Computer bereits in der Lage ist, die Bildschirmhelligkeit automatisch anzupassen (häufig bei Laptops), wird empfohlen, die Helligkeitssteuerung von LightBulb zu deaktivieren, indem beide Helligkeitswerte auf 100% gesetzt werden.
+            """,
+        [nameof(NightBrightnessLabel)] = "Nachthelligkeit:",
+        [nameof(NightBrightnessTooltip)] = """
+            Helligkeit nachts
+
+            Diese Helligkeitseinstellung wirkt auf das Farbgamma, nicht auf die tatsächliche Bildschirmhelligkeit.
+            Wenn Ihr Computer bereits in der Lage ist, die Bildschirmhelligkeit automatisch anzupassen (häufig bei Laptops), wird empfohlen, die Helligkeitssteuerung von LightBulb zu deaktivieren, indem beide Helligkeitswerte auf 100% gesetzt werden.
+            """,
+        [nameof(TransitionDurationLabel)] = "Übergangsdauer:",
+        [nameof(TransitionDurationTooltip)] =
+            "Zeitdauer für den Wechsel zwischen Tages- und Nachtkonfiguration",
+        [nameof(TransitionOffsetLabel)] = "Übergangsversatz:",
+        [nameof(TransitionOffsetTooltip)] =
+            "Versatz, der angibt, wie früh oder spät der Übergang relativ zu Sonnenaufgang und Sonnenuntergang beginnt",
+        [nameof(SolarConfigLabel)] = "Solarkonfiguration:",
+        [nameof(ManualLabel)] = "Manuell",
+        [nameof(ManualTooltip)] = "Sonnenaufgang und Sonnenuntergang manuell konfigurieren",
+        [nameof(LocationBasedLabel)] = "Standortbasiert",
+        [nameof(LocationBasedTooltip)] =
+            "Standort konfigurieren und zur automatischen Berechnung der Sonnenzeiten nutzen",
+        [nameof(SunriseTimeLabel)] = "Sonnenaufgang:",
+        [nameof(SunsetTimeLabel)] = "Sonnenuntergang:",
+        [nameof(YourLocationLabel)] = "Ihr Standort:",
+        [nameof(AutoDetectLocationTooltip)] =
+            "Standort automatisch anhand Ihrer IP-Adresse erkennen",
+        [nameof(LocationQueryTooltip)] = """
+            Geben Sie Ihren Standort mit geografischen Koordinaten oder einer Suchanfrage an
+
+            Beispiele gültiger Eingaben:
+            **41.25, -120.9762**
+            **41.25°N, 120.9762°W**
+            **New York, USA**
+            **Germany**
+            """,
+        [nameof(SetLocationTooltip)] = "Standort festlegen",
+        [nameof(LocationErrorText)] = "Fehler beim Ermitteln des Standorts, bitte erneut versuchen",
+        [nameof(ToggleLightBulbHotkeyLabel)] = "LightBulb umschalten",
+        [nameof(ToggleLightBulbHotkeyTooltip)] =
+            "Globale Tastenkombination zum Ein-/Ausschalten von LightBulb",
+        [nameof(ToggleWindowLabel)] = "Fenster umschalten",
+        [nameof(ToggleWindowHotkeyTooltip)] =
+            "Globale Tastenkombination zum Anzeigen/Ausblenden des LightBulb-Fensters",
+        [nameof(IncreaseTemperatureOffsetLabel)] = "Temperaturversatz ↑",
+        [nameof(IncreaseTemperatureOffsetTooltip)] =
+            "Globale Tastenkombination zum Erhöhen des aktuellen Temperaturversatzes",
+        [nameof(DecreaseTemperatureOffsetLabel)] = "Temperaturversatz ↓",
+        [nameof(DecreaseTemperatureOffsetTooltip)] =
+            "Globale Tastenkombination zum Verringern des aktuellen Temperaturversatzes",
+        [nameof(IncreaseBrightnessOffsetLabel)] = "Helligkeitsversatz ↑",
+        [nameof(IncreaseBrightnessOffsetTooltip)] =
+            "Globale Tastenkombination zum Erhöhen des aktuellen Helligkeitsversatzes",
+        [nameof(DecreaseBrightnessOffsetLabel)] = "Helligkeitsversatz ↓",
+        [nameof(DecreaseBrightnessOffsetTooltip)] =
+            "Globale Tastenkombination zum Verringern des aktuellen Helligkeitsversatzes",
+        [nameof(ResetOffsetLabel)] = "Versatz zurücksetzen",
+        [nameof(ResetOffsetHotkeyTooltip)] =
+            "Globale Tastenkombination zum Zurücksetzen der Temperatur- und Helligkeitsversätze",
+        [nameof(AppWhitelistLabel)] = "Anwendungs-Whitelist",
+        [nameof(RefreshAppsTooltip)] = "Laufende Anwendungen aktualisieren",
+        [nameof(PauseForWhitelistedTooltip)] =
+            "LightBulb pausieren, wenn eine der ausgewählten Anwendungen im Vordergrund ist",
+        [nameof(TrayShowMenuItem)] = "Anzeigen",
+        [nameof(TrayHideMenuItem)] = "Ausblenden",
+        [nameof(TraySettingsMenuItem)] = "Einstellungen",
+        [nameof(TrayEnableMenuItem)] = "Aktivieren",
+        [nameof(TrayDisableMenuItem)] = "Deaktivieren",
+        [nameof(TrayDisableTemporarilyMenuItem)] = "Deaktivieren...",
+        [nameof(TrayDisableUntilSunriseMenuItem)] = "Bis Sonnenaufgang",
+        [nameof(TrayDisableFor1DayMenuItem)] = "Für 1 Tag",
+        [nameof(TrayDisableFor12HoursMenuItem)] = "Für 12 Stunden",
+        [nameof(TrayDisableFor6HoursMenuItem)] = "Für 6 Stunden",
+        [nameof(TrayDisableFor3HoursMenuItem)] = "Für 3 Stunden",
+        [nameof(TrayDisableFor1HourMenuItem)] = "Für 1 Stunde",
+        [nameof(TrayDisableFor30MinutesMenuItem)] = "Für 30 Minuten",
+        [nameof(TrayDisableFor15MinutesMenuItem)] = "Für 15 Minuten",
+        [nameof(TrayDisableFor5MinutesMenuItem)] = "Für 5 Minuten",
+        [nameof(TrayDisableFor1MinuteMenuItem)] = "Für 1 Minute",
+        [nameof(TrayExitMenuItem)] = "Beenden",
+        [nameof(TrayTooltipDisabled)] = "Deaktiviert",
+        [nameof(UpdateAvailableTitle)] = "Update verfügbar",
+        [nameof(UpdateAvailableMessage)] = """
+            Update auf {0} v{1} wurde heruntergeladen.
+            Möchten Sie es jetzt installieren?
+            """,
+        [nameof(InstallButton)] = "INSTALLIEREN",
+        [nameof(CloseButton)] = "SCHLIESSEN",
+        [nameof(LearnMoreButton)] = "MEHR ERFAHREN",
+        [nameof(UnstableBuildTitle)] = "Warnung: Instabiler Build",
+        [nameof(UnstableBuildMessage)] = """
+            Sie verwenden einen Entwicklungs-Build von {0}. Diese Builds wurden nicht gründlich getestet und können Fehler enthalten.
+
+            Automatische Updates sind für Entwicklungs-Builds deaktiviert. Wenn Sie zu einem stabilen Release wechseln möchten, laden Sie ihn bitte manuell herunter.
+            """,
+        [nameof(SeeReleasesButton)] = "RELEASES ANZEIGEN",
+        [nameof(LimitedGammaRangeTitle)] = "Begrenzter Gamma-Bereich",
+        [nameof(LimitedGammaRangeMessage)] = """
+            {0} hat festgestellt, dass erweiterte Gamma-Bereichssteuerungen auf diesem System nicht aktiviert sind.
+            Dies kann dazu führen, dass einige Farbkonfigurationen nicht korrekt funktionieren.
+
+            Drücken Sie BEHEBEN, um den Gamma-Bereich zu entsperren. Administratorrechte können erforderlich sein.
+            """,
+        [nameof(FixButton)] = "BEHEBEN",
+        [nameof(WelcomeTitle)] = "Willkommen!",
+        [nameof(WelcomeMessage)] = """
+            Danke für die Installation von {0}!
+            Für das beste personalisierte Erlebnis legen Sie bitte Ihre bevorzugte Solarkonfiguration fest.
+
+            Drücken Sie OK, um die Einstellungen zu öffnen.
+            """,
+        [nameof(OkButton)] = "OK",
+    };
+}

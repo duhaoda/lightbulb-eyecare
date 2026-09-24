@@ -1,0 +1,179 @@
+using System.Collections.Generic;
+
+namespace LightBulb.Localization;
+
+public partial class LocalizationManager
+{
+    private static readonly IReadOnlyDictionary<string, string> UkrainianLocalization =
+        new Dictionary<string, string>
+        {
+            [nameof(SunsetLabel)] = "Захід",
+            [nameof(SunriseLabel)] = "Схід",
+            [nameof(SunsetTransitionTooltip)] =
+                "Перехід до заходу сонця починається о **{0}** і закінчується о **{1}**",
+            [nameof(SunriseTransitionTooltip)] =
+                "Перехід до сходу сонця починається о **{0}** і закінчується о **{1}**",
+            [nameof(OffsetTooltipHeader)] =
+                "Поточні значення температури та яскравості скориговані зміщенням:",
+            [nameof(TemperatureOffsetLabel)] = "Зміщення температури:",
+            [nameof(BrightnessOffsetLabel)] = "Зміщення яскравості:",
+            [nameof(ClickToResetLabel)] = "Натисніть для скидання",
+            [nameof(OffsetLabel)] = "зміщення",
+            [nameof(ToggleLightBulbTooltip)] = "Увімкнути/вимкнути LightBulb",
+            [nameof(HideToTrayTooltip)] = "Сховати LightBulb у системний трей",
+            [nameof(PreviewText)] = "ДЕМОНСТРАЦІЯ",
+            [nameof(StopPreviewTooltip)] = "Зупинити демонстрацію",
+            [nameof(StartPreviewTooltip)] = "Запустити демонстрацію 24-годинного циклу",
+            [nameof(SettingsText)] = "НАЛАШТУВАННЯ",
+            [nameof(OpenSettingsTooltip)] = "Відкрити налаштування",
+            [nameof(ResetButton)] = "СКИНУТИ",
+            [nameof(ResetTooltip)] = "Скинути всі налаштування до типових",
+            [nameof(CancelButton)] = "СКАСУВАТИ",
+            [nameof(SaveButton)] = "ЗБЕРЕГТИ",
+            [nameof(GeneralTabName)] = "Загальне",
+            [nameof(LocationTabName)] = "Місцезнаходження",
+            [nameof(AdvancedTabName)] = "Додатково",
+            [nameof(AppWhitelistTabName)] = "Білий список",
+            [nameof(HotkeysTabName)] = "Гарячі клавіші",
+            [nameof(ThemeLabel)] = "Тема",
+            [nameof(ThemeTooltip)] = "Бажана тема інтерфейсу",
+            [nameof(LanguageLabel)] = "Мова",
+            [nameof(LanguageTooltip)] = "Бажана мова інтерфейсу",
+            [nameof(StartWithWindowsLabel)] = "Запускати з Windows",
+            [nameof(StartWithWindowsTooltip)] = "Запускати LightBulb при старті Windows",
+            [nameof(AutoUpdateLabel)] = "Авто-оновлення",
+            [nameof(AutoUpdateTooltip)] = "Автоматично оновлювати LightBulb до останньої версії",
+            [nameof(DefaultToDayConfigLabel)] = "Повертатись до денної конфігурації",
+            [nameof(DefaultToDayConfigTooltip)] =
+                "Коли LightBulb вимкнено або призупинено, відновлювати налаштовану денну температуру та яскравість замість гами монітора за замовчуванням",
+            [nameof(PauseWhenFullscreenLabel)] = "Призупиняти при повноекранному режимі",
+            [nameof(PauseWhenFullscreenTooltip)] =
+                "Призупиняти LightBulb, коли будь-яке повноекранне вікно знаходиться на передньому плані",
+            [nameof(GammaSmoothingLabel)] = "Згладжування гами",
+            [nameof(GammaSmoothingTooltip)] =
+                "Повільно перемикати гаму при вмиканні або вимиканні LightBulb, щоб очі мали час адаптуватись",
+            [nameof(GammaPollingLabel)] = "Оновлення гами",
+            [nameof(GammaPollingTooltip)] =
+                "Примусово оновлювати гаму монітора через регулярні проміжки часу, щоб інші програми не могли її перевизначити",
+            [nameof(DayTemperatureLabel)] = "Денна колірна температура:",
+            [nameof(DayTemperatureTooltip)] = "Колірна температура протягом дня",
+            [nameof(NightTemperatureLabel)] = "Нічна колірна температура:",
+            [nameof(NightTemperatureTooltip)] = "Колірна температура протягом ночі",
+            [nameof(DayBrightnessLabel)] = "Денна яскравість:",
+            [nameof(DayBrightnessTooltip)] = """
+                Яскравість протягом дня
+
+                Зауважте, що це налаштування яскравості застосовується до колірної гами, а не до фактичної яскравості монітора.
+                Якщо ваш комп'ютер вже здатний автоматично регулювати яскравість екрана залежно від умов освітлення (як правило, ноутбуки), то рекомендується вимкнути контроль яскравості LightBulb, залишивши обидва параметри яскравості на рівні 100%.
+                """,
+            [nameof(NightBrightnessLabel)] = "Нічна яскравість:",
+            [nameof(NightBrightnessTooltip)] = """
+                Яскравість протягом ночі
+
+                Зауважте, що це налаштування яскравості застосовується до колірної гами, а не до фактичної яскравості монітора.
+                Якщо ваш комп'ютер вже здатний автоматично регулювати яскравість екрана залежно від умов освітлення (як правило, ноутбуки), то рекомендується вимкнути контроль яскравості LightBulb, залишивши обидва параметри яскравості на рівні 100%.
+                """,
+            [nameof(TransitionDurationLabel)] = "Тривалість переходу:",
+            [nameof(TransitionDurationTooltip)] =
+                "Час, необхідний для перемикання між денною та нічною конфігураціями",
+            [nameof(TransitionOffsetLabel)] = "Зміщення переходу:",
+            [nameof(TransitionOffsetTooltip)] =
+                "Зміщення, що визначає, наскільки раніше або пізніше починається перехід відносно сходу та заходу сонця",
+            [nameof(SolarConfigLabel)] = "Сонячна конфігурація:",
+            [nameof(ManualLabel)] = "Ручна",
+            [nameof(ManualTooltip)] = "Налаштувати схід та захід сонця вручну",
+            [nameof(LocationBasedLabel)] = "За місцезнаходженням",
+            [nameof(LocationBasedTooltip)] =
+                "Налаштуйте своє місцезнаходження для автоматичного обчислення часу сходу та заходу сонця",
+            [nameof(SunriseTimeLabel)] = "Схід сонця:",
+            [nameof(SunsetTimeLabel)] = "Захід сонця:",
+            [nameof(YourLocationLabel)] = "Ваше місцезнаходження:",
+            [nameof(AutoDetectLocationTooltip)] =
+                "Спробувати автоматично визначити місцезнаходження за вашою IP-адресою",
+            [nameof(LocationQueryTooltip)] = """
+                Вкажіть своє місцезнаходження за географічними координатами або пошуковим запитом
+
+                Приклади допустимих форматів:
+                **41.25, -120.9762**
+                **41.25°N, 120.9762°W**
+                **New York, USA**
+                **Germany**
+                """,
+            [nameof(SetLocationTooltip)] = "Встановити місцезнаходження",
+            [nameof(LocationErrorText)] = "Помилка визначення місцезнаходження, спробуйте ще раз",
+            [nameof(ToggleLightBulbHotkeyLabel)] = "Перемкнути LightBulb",
+            [nameof(ToggleLightBulbHotkeyTooltip)] =
+                "Глобальна гаряча клавіша для увімкнення/вимкнення LightBulb",
+            [nameof(ToggleWindowLabel)] = "Перемкнути вікно",
+            [nameof(ToggleWindowHotkeyTooltip)] =
+                "Глобальна гаряча клавіша для показу/приховання головного вікна LightBulb",
+            [nameof(IncreaseTemperatureOffsetLabel)] = "Зміщення температури ↑",
+            [nameof(IncreaseTemperatureOffsetTooltip)] =
+                "Глобальна гаряча клавіша для збільшення поточного зміщення температури",
+            [nameof(DecreaseTemperatureOffsetLabel)] = "Зміщення температури ↓",
+            [nameof(DecreaseTemperatureOffsetTooltip)] =
+                "Глобальна гаряча клавіша для зменшення поточного зміщення температури",
+            [nameof(IncreaseBrightnessOffsetLabel)] = "Зміщення яскравості ↑",
+            [nameof(IncreaseBrightnessOffsetTooltip)] =
+                "Глобальна гаряча клавіша для збільшення поточного зміщення яскравості",
+            [nameof(DecreaseBrightnessOffsetLabel)] = "Зміщення яскравості ↓",
+            [nameof(DecreaseBrightnessOffsetTooltip)] =
+                "Глобальна гаряча клавіша для зменшення поточного зміщення яскравості",
+            [nameof(ResetOffsetLabel)] = "Скинути зміщення",
+            [nameof(ResetOffsetHotkeyTooltip)] =
+                "Глобальна гаряча клавіша для скидання поточних зміщень температури та яскравості",
+            [nameof(AppWhitelistLabel)] = "Білий список програм",
+            [nameof(RefreshAppsTooltip)] = "Оновити список запущених програм",
+            [nameof(PauseForWhitelistedTooltip)] =
+                "Призупиняти LightBulb, коли одна з вибраних програм знаходиться на передньому плані",
+            [nameof(TrayShowMenuItem)] = "Показати",
+            [nameof(TrayHideMenuItem)] = "Приховати",
+            [nameof(TraySettingsMenuItem)] = "Налаштування",
+            [nameof(TrayEnableMenuItem)] = "Увімкнути",
+            [nameof(TrayDisableMenuItem)] = "Вимкнути",
+            [nameof(TrayDisableTemporarilyMenuItem)] = "Вимкнути...",
+            [nameof(TrayDisableUntilSunriseMenuItem)] = "До сходу сонця",
+            [nameof(TrayDisableFor1DayMenuItem)] = "На 1 день",
+            [nameof(TrayDisableFor12HoursMenuItem)] = "На 12 годин",
+            [nameof(TrayDisableFor6HoursMenuItem)] = "На 6 годин",
+            [nameof(TrayDisableFor3HoursMenuItem)] = "На 3 години",
+            [nameof(TrayDisableFor1HourMenuItem)] = "На 1 годину",
+            [nameof(TrayDisableFor30MinutesMenuItem)] = "На 30 хвилин",
+            [nameof(TrayDisableFor15MinutesMenuItem)] = "На 15 хвилин",
+            [nameof(TrayDisableFor5MinutesMenuItem)] = "На 5 хвилин",
+            [nameof(TrayDisableFor1MinuteMenuItem)] = "На 1 хвилину",
+            [nameof(TrayExitMenuItem)] = "Вийти",
+            [nameof(TrayTooltipDisabled)] = "Вимкнено",
+            [nameof(UpdateAvailableTitle)] = "Доступне оновлення",
+            [nameof(UpdateAvailableMessage)] = """
+                Оновлення до {0} v{1} завантажено.
+                Встановити зараз?
+                """,
+            [nameof(InstallButton)] = "ВСТАНОВИТИ",
+            [nameof(CloseButton)] = "ЗАКРИТИ",
+            [nameof(LearnMoreButton)] = "ДІЗНАТИСЯ БІЛЬШЕ",
+            [nameof(UnstableBuildTitle)] = "Попередження про нестабільну збірку",
+            [nameof(UnstableBuildMessage)] = """
+                Ви використовуєте збірку розробника {0}. Ці збірки не пройшли ретельного тестування і можуть містити помилки.
+
+                Автоматичні оновлення вимкнені для збірок розробника. Якщо ви хочете перейти на стабільний реліз, завантажте його вручну.
+                """,
+            [nameof(SeeReleasesButton)] = "ПЕРЕГЛЯНУТИ РЕЛІЗИ",
+            [nameof(LimitedGammaRangeTitle)] = "Обмежений діапазон гами",
+            [nameof(LimitedGammaRangeMessage)] = """
+                {0} виявив, що розширені засоби керування діапазоном гами не увімкнені в цій системі.
+                Це може призвести до некоректної роботи деяких колірних конфігурацій.
+
+                Натисніть ВИПРАВИТИ для розблокування діапазону гами. Можуть знадобитися права адміністратора.
+                """,
+            [nameof(FixButton)] = "ВИПРАВИТИ",
+            [nameof(WelcomeTitle)] = "Ласкаво просимо!",
+            [nameof(WelcomeMessage)] = """
+                Дякуємо за встановлення {0}!
+                Для найкращого персоналізованого досвіду, будь ласка, налаштуйте бажану сонячну конфігурацію.
+
+                Натисніть ОК для відкриття налаштувань.
+                """,
+            [nameof(OkButton)] = "ОК",
+        };
+}
