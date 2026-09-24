@@ -1,0 +1,80 @@
+<Window
+  x:Class="LightBulb.Views.Dialogs.BreakOverlayView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:converters="clr-namespace:LightBulb.Converters"
+  xmlns:dialogs="clr-namespace:LightBulb.ViewModels.Dialogs"
+  xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  x:DataType="dialogs:BreakOverlayViewModel"
+  Background="#E6101010"
+  CanResize="False"
+  ShowInTaskbar="False"
+  Topmost="True"
+  WindowDecorations="None"
+  WindowState="Maximized"
+>
+  <!--  An opaque root border guarantees the overlay is visible even if the window background isn't painted  -->
+  <Border Background="#E6101010">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+      <materialIcons:MaterialIcon
+        Width="96"
+        Height="96"
+        HorizontalAlignment="Center"
+        Foreground="#FFF9A825"
+        Kind="CoffeeOutline"
+      />
+
+      <TextBlock
+        HorizontalAlignment="Center"
+        FontSize="40"
+        FontWeight="Medium"
+        Foreground="White"
+        Text="{Binding LocalizationManager.BreakTitle}"
+        TextAlignment="Center"
+      />
+
+      <TextBlock
+        MaxWidth="720"
+        HorizontalAlignment="Center"
+        FontSize="20"
+        Foreground="White"
+        Opacity="0.8"
+        Text="{Binding CurrentMessage}"
+        TextAlignment="Center"
+        TextWrapping="Wrap"
+      />
+
+      <!--  20-20-20 原则的可视提示（2026-09-22 定制）  -->
+      <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="10" Opacity="0.62">
+        <TextBlock FontSize="13" Foreground="#FFF9A825" Text="20 分钟看屏幕" />
+        <TextBlock FontSize="13" Foreground="White" Text="·" />
+        <TextBlock FontSize="13" Foreground="#FFF9A825" Text="20 英尺（6 米）外" />
+        <TextBlock FontSize="13" Foreground="White" Text="·" />
+        <TextBlock FontSize="13" Foreground="#FFF9A825" Text="20 秒" />
+      </StackPanel>
+
+      <TextBlock
+        HorizontalAlignment="Center"
+        FontSize="72"
+        FontWeight="Bold"
+        Foreground="White"
+        Text="{Binding BreakReminderService.RemainingBreakTime, Converter={x:Static converters:TimeSpanToDurationStringConverter.Instance}}"
+      />
+
+      <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
+        <Button
+          Padding="24,10"
+          Command="{Binding PostponeBreakCommand}"
+          Content="{Binding LocalizationManager.BreakPostponeButton}"
+          FontSize="16"
+        />
+        <Button
+          Padding="24,10"
+          Command="{Binding SkipBreakCommand}"
+          Content="{Binding LocalizationManager.BreakSkipButton}"
+          FontSize="16"
+        />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

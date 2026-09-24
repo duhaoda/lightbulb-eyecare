@@ -1,0 +1,456 @@
+<Window
+  x:Class="LightBulb.Views.MainView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:converters="clr-namespace:LightBulb.Converters"
+  xmlns:core="clr-namespace:LightBulb.Core;assembly=LightBulb.Core"
+  xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+  xmlns:lightBulb="clr-namespace:LightBulb"
+  xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:viewModels="clr-namespace:LightBulb.ViewModels"
+  x:Name="Window"
+  Title="{x:Static lightBulb:Program.Name}"
+  Width="470"
+  Height="480"
+  x:DataType="viewModels:MainViewModel"
+  CanResize="False"
+  Closed="Window_OnClosed"
+  Icon="/favicon.ico"
+  Opened="Window_OnOpened"
+  RenderOptions.BitmapInterpolationMode="HighQuality"
+  WindowDecorations="None"
+  WindowStartupLocation="CenterScreen"
+>
+  <Border
+    Background="{DynamicResource MaterialCardBackgroundBrush}"
+    BorderBrush="{DynamicResource MaterialDividerBrush}"
+    BorderThickness="1"
+  >
+    <dialogHostAvalonia:DialogHost x:Name="DialogHost" CloseOnClickAway="False">
+      <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!--  Header  -->
+        <Border
+          x:Name="HeaderBorder"
+          Grid.Row="0"
+          Padding="8,12"
+          Background="{DynamicResource MaterialDarkBackgroundBrush}"
+          PointerPressed="HeaderBorder_OnPointerPressed"
+        >
+          <Grid
+            ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+            MaxWidth="620"
+            HorizontalAlignment="Center"
+          >
+            <!--  On/Off button and logo  -->
+            <ToggleButton
+              Grid.Column="0"
+              Width="32"
+              Height="32"
+              Padding="0"
+              VerticalAlignment="Center"
+              Background="{DynamicResource MaterialSecondaryMidBrush}"
+              Foreground="{DynamicResource MaterialSecondaryMidForegroundBrush}"
+              IsChecked="{Binding Dashboard.IsEnabled}"
+              Theme="{DynamicResource MaterialIconToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.ToggleLightBulbTooltip}"
+            >
+              <ToggleButton.Content>
+                <materialIcons:MaterialIcon Width="24" Height="24">
+                  <materialIcons:MaterialIcon.Styles>
+                    <Style Selector="ToggleButton materialIcons|MaterialIcon">
+                      <Setter Property="Kind" Value="LightbulbOutline" />
+                    </Style>
+                    <Style Selector="ToggleButton:unchecked materialIcons|MaterialIcon">
+                      <Setter Property="Kind" Value="LightbulbOffOutline" />
+                      <Setter Property="Opacity" Value="0.5" />
+                    </Style>
+                  </materialIcons:MaterialIcon.Styles>
+                </materialIcons:MaterialIcon>
+              </ToggleButton.Content>
+            </ToggleButton>
+
+            <!--  Application name and version  -->
+            <TextBlock
+              Grid.Column="1"
+              Margin="8,1,0,0"
+              VerticalAlignment="Center"
+              FontSize="16"
+              Foreground="{DynamicResource MaterialDarkForegroundBrush}"
+            >
+              <Run FontSize="19" FontWeight="Medium" Text="{x:Static lightBulb:Program.Name}" />
+              <Run FontWeight="Light" Text="v" />
+              <Run FontWeight="Light" Text="{x:Static lightBulb:Program.VersionString}" />
+            </TextBlock>
+
+            <!--  Full screen button（2026-09-22 定制）  -->
+            <Button
+              x:Name="FullScreenButton"
+              Grid.Column="3"
+              Padding="4"
+              VerticalAlignment="Center"
+              Click="FullScreenButton_OnClick"
+              Foreground="{DynamicResource MaterialDarkForegroundBrush}"
+              Theme="{DynamicResource MaterialFlatButton}"
+              ToolTip.Tip="全屏 / 退出全屏"
+            >
+              <materialIcons:MaterialIcon Width="24" Height="24" Kind="Fullscreen" />
+            </Button>
+
+            <!--  Hide button  -->
+            <Button
+              x:Name="HideButton"
+              Grid.Column="4"
+              Padding="4"
+              VerticalAlignment="Center"
+              Click="HideButton_OnClick"
+              Foreground="{DynamicResource MaterialDarkForegroundBrush}"
+              Theme="{DynamicResource MaterialFlatButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.HideToTrayTooltip}"
+            >
+              <materialIcons:MaterialIcon Width="24" Height="24" Kind="WindowMinimize" />
+            </Button>
+          </Grid>
+        </Border>
+
+        <!--  Body + 全屏时的两侧状态面板（2026-09-22 定制）  -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*">
+          <!--  左：当前色温 / 亮度  -->
+          <StackPanel
+            Grid.Column="0"
+            Margin="40,0,20,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            IsVisible="{Binding IsFullScreen}"
+            Spacing="8"
+          >
+            <TextBlock FontSize="13" HorizontalAlignment="Right" Opacity="0.5" Text="当前色温" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="4">
+              <TextBlock
+                FontSize="46"
+                FontWeight="Medium"
+                Text="{Binding Dashboard.CurrentConfiguration.Temperature, StringFormat={}{0:F0}}"
+              />
+              <TextBlock FontSize="20" Margin="0,0,0,8" VerticalAlignment="Bottom" Text="K" />
+            </StackPanel>
+            <TextBlock
+              FontSize="13"
+              HorizontalAlignment="Right"
+              Opacity="0.5"
+              Text="{Binding Dashboard.CurrentConfiguration.Brightness, StringFormat=亮度 {0:P0}}"
+            />
+          </StackPanel>
+
+          <ContentControl
+            Grid.Column="1"
+            Margin="0,16,0,8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Content="{Binding Dashboard}"
+          />
+
+          <!--  右：距离下次休息  -->
+          <StackPanel
+            Grid.Column="2"
+            Margin="20,0,40,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            IsVisible="{Binding IsFullScreen}"
+            Spacing="8"
+          >
+            <TextBlock FontSize="13" Opacity="0.5" Text="距离下次休息" />
+            <TextBlock
+              FontSize="46"
+              FontWeight="Medium"
+              Text="{Binding BreakReminderService.TimeUntilNextBreak}"
+            />
+            <TextBlock FontSize="13" Opacity="0.5" Text="每 20 分钟，看 6 米外 20 秒" />
+          </StackPanel>
+        </Grid>
+
+        <!--  Preset modes  -->
+        <StackPanel Grid.Row="2" Margin="12,0,12,4">
+          <TextBlock
+            Margin="8,0,0,2"
+            FontSize="11"
+            FontWeight="Medium"
+            Opacity="0.7"
+            Text="{Binding Dashboard.LocalizationManager.PresetModesLabel}"
+          />
+          <WrapPanel MaxWidth="620" HorizontalAlignment="Center">
+            <WrapPanel.Styles>
+              <!--  预设按钮选中态 → 琥珀强调色（2026-09-22 定制，与产品遮罩的 #F9A825 同色）  -->
+              <Style Selector="ToggleButton:checked">
+                <Setter Property="Background" Value="#F9A825" />
+                <Setter Property="Foreground" Value="#101010" />
+              </Style>
+              <Style Selector="ToggleButton:checked:pointerover">
+                <Setter Property="Background" Value="#FFB300" />
+                <Setter Property="Foreground" Value="#101010" />
+              </Style>
+            </WrapPanel.Styles>
+            <!--  Automatic (day/night cycle)  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.ClearPresetCommand}"
+              IsChecked="{Binding !Dashboard.IsPresetActive, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetAutoTooltip}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="Autorenew" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetAutoName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Reading  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Reading}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Reading, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetReadingName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon
+                  Width="16"
+                  Height="16"
+                  Kind="BookOpenPageVariantOutline"
+                />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetReadingName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Office  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Office}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Office, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetOfficeName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="BriefcaseOutline" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetOfficeName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Night  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Night}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Night, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetNightName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="WeatherNight" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetNightName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Movie  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Movie}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Movie, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetMovieName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="MovieOpenOutline" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetMovieName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Coding  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Coding}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Coding, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetCodeName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="CodeBraces" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetCodeName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Game  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Game}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Game, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetGameName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="GamepadVariantOutline" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetGameName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Eye care  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.EyeCare}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=EyeCare, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetEyeCareName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="EyeOutline" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetEyeCareName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+
+            <!--  Custom  -->
+            <ToggleButton
+              Width="100"
+              Margin="3"
+              Padding="6,4"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Dashboard.TogglePresetCommand}"
+              CommandParameter="{x:Static core:ColorPresets.Custom}"
+              IsChecked="{Binding Dashboard.ActivePresetId, Converter={x:Static converters:PresetIdEqualsConverter.Instance}, ConverterParameter=Custom, Mode=OneWay}"
+              Theme="{DynamicResource MaterialFlatToggleButton}"
+              ToolTip.Tip="{Binding Dashboard.LocalizationManager.PresetCustomName}"
+            >
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <materialIcons:MaterialIcon Width="16" Height="16" Kind="TuneVariant" />
+                <TextBlock
+                  FontSize="12"
+                  Text="{Binding Dashboard.LocalizationManager.PresetCustomName}"
+                />
+              </StackPanel>
+            </ToggleButton>
+          </WrapPanel>
+        </StackPanel>
+
+        <!--  Buttons  -->
+        <UniformGrid Grid.Row="3" Margin="8,0" Columns="2">
+          <!--  Start/stop cycle preview  -->
+          <ToggleButton
+            Margin="8"
+            HorizontalContentAlignment="Center"
+            IsChecked="{Binding Dashboard.IsCyclePreviewEnabled}"
+            Theme="{DynamicResource MaterialFlatToggleButton}"
+          >
+            <Button.Styles>
+              <Style Selector="ToggleButton">
+                <Style Selector="^:checked">
+                  <Setter
+                    Property="ToolTip.Tip"
+                    Value="{Binding Dashboard.LocalizationManager.StopPreviewTooltip}"
+                  />
+                </Style>
+                <Style Selector="^:unchecked">
+                  <Setter
+                    Property="ToolTip.Tip"
+                    Value="{Binding Dashboard.LocalizationManager.StartPreviewTooltip}"
+                  />
+                </Style>
+              </Style>
+            </Button.Styles>
+            <Grid ColumnDefinitions="Auto,*">
+              <materialIcons:MaterialIcon Width="24" Height="24">
+                <materialIcons:MaterialIcon.Styles>
+                  <Style Selector="ToggleButton materialIcons|MaterialIcon">
+                    <Setter Property="Kind" Value="PlayCircleOutline" />
+                  </Style>
+                  <Style Selector="ToggleButton:checked materialIcons|MaterialIcon">
+                    <Setter Property="Kind" Value="StopCircleOutline" />
+                  </Style>
+                </materialIcons:MaterialIcon.Styles>
+              </materialIcons:MaterialIcon>
+              <TextBlock
+                Grid.Column="1"
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                Text="{Binding Dashboard.LocalizationManager.PreviewText}"
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+              />
+            </Grid>
+          </ToggleButton>
+
+          <!--  Settings  -->
+          <Button
+            Margin="8"
+            HorizontalContentAlignment="Center"
+            Command="{Binding ShowSettingsCommand}"
+            Theme="{DynamicResource MaterialFlatButton}"
+            ToolTip.Tip="{Binding Dashboard.LocalizationManager.OpenSettingsTooltip}"
+          >
+            <Grid ColumnDefinitions="Auto,*">
+              <materialIcons:MaterialIcon Width="24" Height="24" Kind="Settings" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                Text="{Binding Dashboard.LocalizationManager.SettingsText}"
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+              />
+            </Grid>
+          </Button>
+        </UniformGrid>
+      </Grid>
+    </dialogHostAvalonia:DialogHost>
+  </Border>
+</Window>

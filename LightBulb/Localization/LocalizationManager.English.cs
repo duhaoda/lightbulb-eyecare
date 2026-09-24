@@ -1,0 +1,216 @@
+using System.Collections.Generic;
+
+namespace LightBulb.Localization;
+
+public partial class LocalizationManager
+{
+    private static readonly IReadOnlyDictionary<string, string> EnglishLocalization =
+        new Dictionary<string, string>
+        {
+            // Dashboard
+            [nameof(SunsetLabel)] = "Sunset",
+            [nameof(SunriseLabel)] = "Sunrise",
+            [nameof(SunsetTransitionTooltip)] =
+                "Sunset transition starts at **{0}** and ends at **{1}**",
+            [nameof(SunriseTransitionTooltip)] =
+                "Sunrise transition starts at **{0}** and ends at **{1}**",
+            [nameof(OffsetTooltipHeader)] =
+                "Current temperature and brightness values are adjusted by an offset:",
+            [nameof(TemperatureOffsetLabel)] = "Temperature offset:",
+            [nameof(BrightnessOffsetLabel)] = "Brightness offset:",
+            [nameof(ClickToResetLabel)] = "Click to reset",
+            [nameof(OffsetLabel)] = "offset",
+            // Preset modes
+            [nameof(PresetModesLabel)] = "PRESET MODES",
+            [nameof(PresetAutoName)] = "AUTO",
+            [nameof(PresetAutoTooltip)] = "Follow the day/night cycle automatically",
+            [nameof(PresetReadingName)] = "Reading",
+            [nameof(PresetOfficeName)] = "Office",
+            [nameof(PresetNightName)] = "Night",
+            [nameof(PresetMovieName)] = "Movie",
+            [nameof(PresetCodeName)] = "Coding",
+            [nameof(PresetGameName)] = "Game",
+            [nameof(PresetEyeCareName)] = "Eye care",
+            [nameof(PresetCustomName)] = "Custom",
+            // Break reminder
+            [nameof(BreakTitle)] = "Time for a break",
+            [nameof(BreakMessage)] =
+                "Look at something at least 20 feet (6 meters) away and let your eyes relax.",
+            [nameof(BreakSkipButton)] = "Skip this break",
+            [nameof(BreakPostponeButton)] = "Remind me in 5 minutes",
+            [nameof(BreakReminderLabel)] = "Break reminder",
+            [nameof(BreakReminderTooltip)] =
+                "Show a full-screen reminder to take a break after a period of continuous work",
+            [nameof(BreakWorkDurationLabel)] = "Work duration:",
+            [nameof(BreakWorkDurationTooltip)] = "How long to work before a break is suggested",
+            [nameof(BreakDurationLabel)] = "Break duration:",
+            [nameof(BreakDurationTooltip)] = "How long the break reminder is shown",
+            [nameof(TrayTakeBreakMenuItem)] = "Take a break now",
+            // Main window
+            [nameof(ToggleLightBulbTooltip)] = "Toggle LightBulb on/off",
+            [nameof(HideToTrayTooltip)] = "Hide LightBulb to the system tray",
+            [nameof(PreviewText)] = "PREVIEW",
+            [nameof(StopPreviewTooltip)] = "Stop preview",
+            [nameof(StartPreviewTooltip)] = "Preview 24-hour cycle",
+            [nameof(SettingsText)] = "SETTINGS",
+            [nameof(OpenSettingsTooltip)] = "Open settings",
+            // Settings dialog
+            [nameof(ResetButton)] = "RESET",
+            [nameof(ResetTooltip)] = "Reset all settings to their defaults",
+            [nameof(CancelButton)] = "CANCEL",
+            [nameof(SaveButton)] = "SAVE",
+            // Settings tabs
+            [nameof(GeneralTabName)] = "General",
+            [nameof(LocationTabName)] = "Location",
+            [nameof(AdvancedTabName)] = "Advanced",
+            [nameof(AppWhitelistTabName)] = "Application whitelist",
+            [nameof(HotkeysTabName)] = "Hotkeys",
+            // Advanced settings tab
+            [nameof(ThemeLabel)] = "Theme",
+            [nameof(ThemeTooltip)] = "Preferred user interface theme",
+            [nameof(LanguageLabel)] = "Language",
+            [nameof(LanguageTooltip)] = "Preferred user interface language",
+            [nameof(StartWithWindowsLabel)] = "Start with Windows",
+            [nameof(StartWithWindowsTooltip)] = "Launch LightBulb at Windows startup",
+            [nameof(AutoUpdateLabel)] = "Auto-update",
+            [nameof(AutoUpdateTooltip)] =
+                "Keep LightBulb updated by automatically installing new versions as they become available",
+            [nameof(DefaultToDayConfigLabel)] = "Default to day-time configuration",
+            [nameof(DefaultToDayConfigTooltip)] =
+                "When LightBulb is disabled or paused, restore the configured day-time temperature and brightness instead of the default monitor gamma",
+            [nameof(PauseWhenFullscreenLabel)] = "Pause when fullscreen",
+            [nameof(PauseWhenFullscreenTooltip)] =
+                "Pause LightBulb when any fullscreen window is in the foreground",
+            [nameof(GammaSmoothingLabel)] = "Gamma smoothing",
+            [nameof(GammaSmoothingTooltip)] =
+                "Transition slowly when enabling or disabling LightBulb to give time for eyes to adjust",
+            [nameof(GammaPollingLabel)] = "Gamma polling",
+            [nameof(GammaPollingTooltip)] =
+                "Force-refresh monitor gamma at regular intervals to prevent other programs from overriding it",
+            // General settings tab
+            [nameof(DayTemperatureLabel)] = "Day-time color temperature:",
+            [nameof(DayTemperatureTooltip)] = "Color temperature during the day",
+            [nameof(NightTemperatureLabel)] = "Night-time color temperature:",
+            [nameof(NightTemperatureTooltip)] = "Color temperature during the night",
+            [nameof(DayBrightnessLabel)] = "Day-time brightness:",
+            [nameof(DayBrightnessTooltip)] = """
+                Brightness during the day
+
+                Note that this brightness setting applies to the color gamma, not to the actual brightness of the monitor.
+                If your computer is already capable of auto-adjusting screen brightness based on lighting conditions (common for laptops), then it's recommended to disable LightBulb's brightness control by keeping both brightness settings at 100%.
+                """,
+            [nameof(NightBrightnessLabel)] = "Night-time brightness:",
+            [nameof(NightBrightnessTooltip)] = """
+                Brightness during the night
+
+                Note that this brightness setting applies to the color gamma, not to the actual brightness of the monitor.
+                If your computer is already capable of auto-adjusting screen brightness based on lighting conditions (common for laptops), then it's recommended to disable LightBulb's brightness control by keeping both brightness settings at 100%.
+                """,
+            [nameof(TransitionDurationLabel)] = "Transition duration:",
+            [nameof(TransitionDurationTooltip)] =
+                "Duration of time it takes to switch between day-time and night-time configurations",
+            [nameof(TransitionOffsetLabel)] = "Transition offset:",
+            [nameof(TransitionOffsetTooltip)] =
+                "Offset that specifies how early or late the transition starts, relative to the sunrise and sunset",
+            // Location settings tab
+            [nameof(SolarConfigLabel)] = "Solar configuration:",
+            [nameof(ManualLabel)] = "Manual",
+            [nameof(ManualTooltip)] = "Configure sunrise and sunset manually",
+            [nameof(LocationBasedLabel)] = "Location-based",
+            [nameof(LocationBasedTooltip)] =
+                "Configure your location and use it to automatically calculate the sunrise and sunset times",
+            [nameof(SunriseTimeLabel)] = "Sunrise:",
+            [nameof(SunsetTimeLabel)] = "Sunset:",
+            [nameof(YourLocationLabel)] = "Your location:",
+            [nameof(AutoDetectLocationTooltip)] =
+                "Try to detect the location automatically based on your IP address",
+            [nameof(LocationQueryTooltip)] = """
+                Specify your location using geographic coordinates or a search query
+
+                Examples of valid inputs:
+                **41.25, -120.9762**
+                **41.25°N, 120.9762°W**
+                **New York, USA**
+                **Germany**
+                """,
+            [nameof(SetLocationTooltip)] = "Set location",
+            [nameof(LocationErrorText)] = "Error resolving location, try again",
+            // Hot key settings tab
+            [nameof(ToggleLightBulbHotkeyLabel)] = "Toggle LightBulb",
+            [nameof(ToggleLightBulbHotkeyTooltip)] = "Global hotkey to toggle LightBulb on/off",
+            [nameof(ToggleWindowLabel)] = "Toggle window",
+            [nameof(ToggleWindowHotkeyTooltip)] =
+                "Global hotkey to show/hide LightBulb's main window",
+            [nameof(IncreaseTemperatureOffsetLabel)] = "Temperature offset ↑",
+            [nameof(IncreaseTemperatureOffsetTooltip)] =
+                "Global hotkey to increase the current temperature offset",
+            [nameof(DecreaseTemperatureOffsetLabel)] = "Temperature offset ↓",
+            [nameof(DecreaseTemperatureOffsetTooltip)] =
+                "Global hotkey to decrease the current temperature offset",
+            [nameof(IncreaseBrightnessOffsetLabel)] = "Brightness offset ↑",
+            [nameof(IncreaseBrightnessOffsetTooltip)] =
+                "Global hotkey to increase the current brightness offset",
+            [nameof(DecreaseBrightnessOffsetLabel)] = "Brightness offset ↓",
+            [nameof(DecreaseBrightnessOffsetTooltip)] =
+                "Global hotkey to decrease the current brightness offset",
+            [nameof(ResetOffsetLabel)] = "Reset offset",
+            [nameof(ResetOffsetHotkeyTooltip)] =
+                "Global hotkey to reset the current temperature and brightness offsets",
+            // Application whitelist settings tab
+            [nameof(AppWhitelistLabel)] = "Application whitelist",
+            [nameof(RefreshAppsTooltip)] = "Refresh running applications",
+            [nameof(PauseForWhitelistedTooltip)] =
+                "Pause LightBulb when one of the selected applications is in the foreground",
+            // Tray icon context menu
+            [nameof(TrayShowMenuItem)] = "Show",
+            [nameof(TrayHideMenuItem)] = "Hide",
+            [nameof(TraySettingsMenuItem)] = "Settings",
+            [nameof(TrayEnableMenuItem)] = "Enable",
+            [nameof(TrayDisableMenuItem)] = "Disable",
+            [nameof(TrayDisableTemporarilyMenuItem)] = "Disable...",
+            [nameof(TrayDisableUntilSunriseMenuItem)] = "Until sunrise",
+            [nameof(TrayDisableFor1DayMenuItem)] = "For 1 day",
+            [nameof(TrayDisableFor12HoursMenuItem)] = "For 12 hours",
+            [nameof(TrayDisableFor6HoursMenuItem)] = "For 6 hours",
+            [nameof(TrayDisableFor3HoursMenuItem)] = "For 3 hours",
+            [nameof(TrayDisableFor1HourMenuItem)] = "For 1 hour",
+            [nameof(TrayDisableFor30MinutesMenuItem)] = "For 30 minutes",
+            [nameof(TrayDisableFor15MinutesMenuItem)] = "For 15 minutes",
+            [nameof(TrayDisableFor5MinutesMenuItem)] = "For 5 minutes",
+            [nameof(TrayDisableFor1MinuteMenuItem)] = "For 1 minute",
+            [nameof(TrayExitMenuItem)] = "Exit",
+            [nameof(TrayTooltipDisabled)] = "Disabled",
+            // Dialog messages
+            [nameof(UpdateAvailableTitle)] = "Update available",
+            [nameof(UpdateAvailableMessage)] = """
+                Update to {0} v{1} has been downloaded.
+                Do you want to install it now?
+                """,
+            [nameof(InstallButton)] = "INSTALL",
+            [nameof(CloseButton)] = "CLOSE",
+            [nameof(LearnMoreButton)] = "LEARN MORE",
+            [nameof(UnstableBuildTitle)] = "Unstable build warning",
+            [nameof(UnstableBuildMessage)] = """
+                You're using a development build of {0}. These builds are not thoroughly tested and may contain bugs.
+
+                Auto-updates are disabled for development builds. If you want to switch to a stable release, please download it manually.
+                """,
+            [nameof(SeeReleasesButton)] = "SEE RELEASES",
+            [nameof(LimitedGammaRangeTitle)] = "Limited gamma range",
+            [nameof(LimitedGammaRangeMessage)] = """
+                {0} has detected that extended gamma range controls are not enabled on this system.
+                This may cause some color configurations to not work correctly.
+
+                Press FIX to unlock the gamma range. Administrator privileges may be required.
+                """,
+            [nameof(FixButton)] = "FIX",
+            [nameof(WelcomeTitle)] = "Welcome!",
+            [nameof(WelcomeMessage)] = """
+                Thank you for installing {0}!
+                To get the most personalized experience, please set your preferred solar configuration.
+
+                Press OK to open settings.
+                """,
+            [nameof(OkButton)] = "OK",
+        };
+}

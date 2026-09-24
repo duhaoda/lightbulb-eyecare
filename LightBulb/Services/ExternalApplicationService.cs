@@ -1,0 +1,82 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using LightBulb.Models;
+using LightBulb.PlatformInterop;
+
+namespace LightBulb.Services;
+
+public class ExternalApplicationService
+{
+    // Applications that we don't want to show to the user
+    private readonly HashSet<string> _ignoredApplicationNames = new(
+        StringComparer.OrdinalIgnoreCase
+    )
+    {
+        "explorer",
+        // Windows shell experience host (hosts the task switcher, notification center, etc.)
+        "ShellExperienceHost",
+        // Windows start menu experience host
+        "StartMenuExperienceHost",
+    };
+
+    public IEnumerable<ExternalApplication> GetAllRunningApplications()
+    {
+        foreach (var window in Window.GetAll())
+        {
+            using var _ = window;
+
+            if (!window.IsVisible() || window.IsSystemWindow())
+                continue;
+
+            using var process = window.TryGetProcess();
+
+            var executableFilePath = process?.TryGetExecutableFilePath();
+            var executableFileName = Path.GetFileNameWithoutExtension(executableFilePath);
+
+            if (
+                string.IsNullOrWhiteSpace(executableFilePath)
+                || string.IsNullOrWhiteSpace(executableFileName)
+            )
+                continue;
+
+            if (_ignoredApplicationNames.Contains(executableFileName))
+                continue;
+
+            yield return new ExternalApplication(executableFilePath);
+        }
+    }
+
+    public ExternalApplication? TryGetForegroundApplication()
+    {
+        using var window = Window.TryGetForeground();
+        using var process = window?.TryGetProcess();
+
+        var executableFilePath = process?.TryGetExecutableFilePath();
+
+        return !string.IsNullOrWhiteSpace(executableFilePath)
+            ? new ExternalApplication(executableFilePath)
+            : null;
+    }
+
+    public bool IsForegroundApplicationFullScreen()
+    {
+        using var window = Window.TryGetForeground();
+        if (window is null || !window.IsVisible() || window.IsSystemWindow())
+            return false;
+
+        using var process = window.TryGetProcess();
+        var executableFilePath = process?.TryGetExecutableFilePath();
+        var executableFileName = executableFilePath is not null
+            ? Path.GetFileNameWithoutExtension(executableFilePath)
+            : null;
+
+        if (
+            !string.IsNullOrWhiteSpace(executableFileName)
+            && _ignoredApplicationNames.Contains(executableFileName)
+        )
+            return false;
+
+        return window.IsFullScreen();
+    }
+}

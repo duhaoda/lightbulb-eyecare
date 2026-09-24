@@ -1,0 +1,572 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using LightBulb.Core;
+using LightBulb.Core.Utils.Extensions;
+using LightBulb.Framework;
+using LightBulb.Localization;
+using LightBulb.Models;
+using LightBulb.PlatformInterop;
+using LightBulb.Services;
+using LightBulb.Utils.Extensions;
+using PowerKit;
+using PowerKit.Extensions;
+
+namespace LightBulb.ViewModels.Components;
+
+public partial class DashboardViewModel : ViewModelBase
+{
+    private readonly SettingsService _settingsService;
+    private readonly GammaService _gammaService;
+    private readonly HotKeyService _hotKeyService;
+    private readonly ExternalApplicationService _externalApplicationService;
+
+    private readonly IDisposable _eventSubscription;
+
+    private readonly Timer _updateInstantTimer;
+    private readonly Timer _updateConfigurationTimer;
+    private readonly Timer _updateIsPausedTimer;
+
+    private IDisposable? _enableAfterDelayRegistration;
+    private ColorConfiguration? _configurationSmoothingSource;
+    private ColorConfiguration? _configurationSmoothingTarget;
+
+    public DashboardViewModel(
+        SettingsService settingsService,
+        LocalizationManager localizationManager,
+        GammaService gammaService,
+        HotKeyService hotKeyService,
+        ExternalApplicationService externalApplicationService
+    )
+    {
+        _settingsService = settingsService;
+        LocalizationManager = localizationManager;
+        _gammaService = gammaService;
+        _hotKeyService = hotKeyService;
+        _externalApplicationService = externalApplicationService;
+
+        _eventSubscription = Disposable.Merge(
+            this.WatchProperty(
+                o => o.IsEnabled,
+                v =>
+                {
+                    if (v)
+                    {
+                        // Cancel any activate 'disable temporarily' timers
+                        _enableAfterDelayRegistration?.Dispose();
+
+                        // Invalidate device contexts
+                        _gammaService.InvalidateDeviceContexts();
+                    }
+                }
+            ),
+            // Refresh transition tooltips when the language changes
+            localizationManager.WatchProperty(
+                o => o.Language,
+                _ =>
+                {
+                    OnPropertyChanged(nameof(SunsetTransitionTooltip));
+                    OnPropertyChanged(nameof(SunriseTransitionTooltip));
+                    OnPropertyChanged(nameof(StatusText));
+                }
+            ),
+            // Re-register hotkeys when they get updated
+            settingsService.WatchProperties(
+                [
+                    o => o.ToggleHotKey,
+                    o => o.ToggleWindowHotKey,
+                    o => o.IncreaseTemperatureOffsetHotKey,
+                    o => o.DecreaseTemperatureOffsetHotKey,
+                    o => o.IncreaseBrightnessOffsetHotKey,
+                    o => o.DecreaseBrightnessOffsetHotKey,
+                    o => o.ResetConfigurationOffsetHotKey,
+                ],
+                RegisterHotKeys
+            )
+        );
+
+        _updateConfigurationTimer = new Timer(
+            TimeSpan.FromMilliseconds(50),
+            () => Dispatcher.UIThread.Post(UpdateConfiguration)
+        );
+        _updateInstantTimer = new Timer(
+            TimeSpan.FromMilliseconds(50),
+            () => Dispatcher.UIThread.Post(UpdateInstant)
+        );
+        _updateIsPausedTimer = new Timer(
+            TimeSpan.FromSeconds(1),
+            () => Dispatcher.UIThread.Post(UpdateIsPaused)
+        );
+    }
+
+    public LocalizationManager LocalizationManager { get; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsActive))]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    public partial bool IsEnabled { get; set; } = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsActive))]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    public partial bool IsPaused { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsActive))]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    public partial bool IsCyclePreviewEnabled { get; set; }
+
+    public bool IsActive => IsEnabled && !IsPaused || IsCyclePreviewEnabled;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SolarTimes))]
+    [NotifyPropertyChangedFor(nameof(SunriseStart))]
+    [NotifyPropertyChangedFor(nameof(SunriseEnd))]
+    [NotifyPropertyChangedFor(nameof(SunsetStart))]
+    [NotifyPropertyChangedFor(nameof(SunsetEnd))]
+    [NotifyPropertyChangedFor(nameof(SunriseTransitionTooltip))]
+    [NotifyPropertyChangedFor(nameof(SunsetTransitionTooltip))]
+    [NotifyPropertyChangedFor(nameof(TargetConfiguration))]
+    [NotifyPropertyChangedFor(nameof(CycleState))]
+    public partial DateTimeOffset Instant { get; set; } = DateTimeOffset.Now;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOffsetEnabled))]
+    [NotifyPropertyChangedFor(nameof(TargetConfiguration))]
+    [NotifyPropertyChangedFor(nameof(AdjustedDayConfiguration))]
+    [NotifyPropertyChangedFor(nameof(AdjustedNightConfiguration))]
+    [NotifyPropertyChangedFor(nameof(CycleState))]
+    public partial double TemperatureOffset { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOffsetEnabled))]
+    [NotifyPropertyChangedFor(nameof(TargetConfiguration))]
+    [NotifyPropertyChangedFor(nameof(AdjustedDayConfiguration))]
+    [NotifyPropertyChangedFor(nameof(AdjustedNightConfiguration))]
+    [NotifyPropertyChangedFor(nameof(CycleState))]
+    public partial double BrightnessOffset { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    public partial ColorConfiguration CurrentConfiguration { get; set; } =
+        ColorConfiguration.Default;
+
+    public SolarTimes SolarTimes =>
+        _settingsService is { IsManualSunriseSunsetEnabled: false, Location: { } location }
+            ? SolarTimes.Calculate(location, Instant)
+            : new SolarTimes(_settingsService.ManualSunrise, _settingsService.ManualSunset);
+
+    public TimeOnly SunriseStart =>
+        Cycle.GetSunriseStart(
+            SolarTimes.Sunrise,
+            _settingsService.ConfigurationTransitionDuration,
+            _settingsService.ConfigurationTransitionOffset
+        );
+
+    public TimeOnly SunriseEnd =>
+        Cycle.GetSunriseEnd(
+            SolarTimes.Sunrise,
+            _settingsService.ConfigurationTransitionDuration,
+            _settingsService.ConfigurationTransitionOffset
+        );
+
+    public TimeOnly SunsetStart =>
+        Cycle.GetSunsetStart(
+            SolarTimes.Sunset,
+            _settingsService.ConfigurationTransitionDuration,
+            _settingsService.ConfigurationTransitionOffset
+        );
+
+    public TimeOnly SunsetEnd =>
+        Cycle.GetSunsetEnd(
+            SolarTimes.Sunset,
+            _settingsService.ConfigurationTransitionDuration,
+            _settingsService.ConfigurationTransitionOffset
+        );
+
+    public string SunsetTransitionTooltip =>
+        string.Format(
+            LocalizationManager.SunsetTransitionTooltip,
+            SunsetStart.ToString(CultureInfo.CurrentCulture),
+            SunsetEnd.ToString(CultureInfo.CurrentCulture)
+        );
+
+    public string SunriseTransitionTooltip =>
+        string.Format(
+            LocalizationManager.SunriseTransitionTooltip,
+            SunriseStart.ToString(CultureInfo.CurrentCulture),
+            SunriseEnd.ToString(CultureInfo.CurrentCulture)
+        );
+
+    public bool IsOffsetEnabled => Math.Abs(TemperatureOffset) + Math.Abs(BrightnessOffset) >= 0.01;
+
+    public ColorConfiguration TargetConfiguration =>
+        IsActive
+            ? TryGetActivePresetConfiguration() is { } presetConfiguration
+                ? presetConfiguration
+                    .WithOffset(TemperatureOffset, BrightnessOffset)
+                    .Clamp(
+                        _settingsService.MinimumTemperature,
+                        _settingsService.MaximumTemperature,
+                        _settingsService.MinimumBrightness,
+                        _settingsService.MaximumBrightness
+                    )
+                : Cycle
+                    .InterpolateConfiguration(
+                        SolarTimes,
+                        _settingsService.DayConfiguration,
+                        _settingsService.NightConfiguration,
+                        _settingsService.ConfigurationTransitionDuration,
+                        _settingsService.ConfigurationTransitionOffset,
+                        Instant
+                    )
+                    .WithOffset(TemperatureOffset, BrightnessOffset)
+                    .Clamp(
+                        _settingsService.MinimumTemperature,
+                        _settingsService.MaximumTemperature,
+                        _settingsService.MinimumBrightness,
+                        _settingsService.MaximumBrightness
+                    )
+            : _settingsService.IsDefaultToDayConfigurationEnabled
+                ? _settingsService.DayConfiguration
+                : ColorConfiguration.Default;
+
+    public ColorConfiguration AdjustedDayConfiguration =>
+        _settingsService.DayConfiguration.WithOffset(TemperatureOffset, BrightnessOffset);
+
+    public ColorConfiguration AdjustedNightConfiguration =>
+        _settingsService.NightConfiguration.WithOffset(TemperatureOffset, BrightnessOffset);
+
+    public CycleState CycleState =>
+        this switch
+        {
+            _ when CurrentConfiguration != TargetConfiguration => CycleState.Transition,
+            _ when !IsEnabled => CycleState.Disabled,
+            _ when IsPaused => CycleState.Paused,
+            _ when TryGetActivePresetConfiguration() is { } presetConfiguration =>
+                presetConfiguration.Temperature >= 5000 ? CycleState.Day : CycleState.Night,
+            _ when CurrentConfiguration == AdjustedDayConfiguration => CycleState.Day,
+            _ when CurrentConfiguration == AdjustedNightConfiguration => CycleState.Night,
+            _ => CycleState.Transition,
+        };
+
+    public string StatusText =>
+        Program.Name
+        + Environment.NewLine
+        + (
+            IsActive
+                ? CurrentConfiguration.Temperature.ToString("F0")
+                    + " / "
+                    + CurrentConfiguration.Brightness.ToString("P0")
+                : LocalizationManager.TrayTooltipDisabled
+        );
+
+    private void RegisterHotKeys()
+    {
+        _hotKeyService.UnregisterAllHotKeys();
+
+        if (_settingsService.ToggleHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.ToggleHotKey,
+                () => IsEnabled = !IsEnabled
+            );
+        }
+
+        if (_settingsService.ToggleWindowHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.ToggleWindowHotKey,
+                () => App.Current?.ToggleMainWindow()
+            );
+        }
+
+        if (_settingsService.IncreaseTemperatureOffsetHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.IncreaseTemperatureOffsetHotKey,
+                () =>
+                {
+                    TemperatureOffset += Math.Min(
+                        100,
+                        _settingsService.MaximumTemperature - TargetConfiguration.Temperature
+                    );
+                }
+            );
+        }
+
+        if (_settingsService.DecreaseTemperatureOffsetHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.DecreaseTemperatureOffsetHotKey,
+                () =>
+                {
+                    TemperatureOffset += Math.Max(
+                        -100,
+                        _settingsService.MinimumTemperature - TargetConfiguration.Temperature
+                    );
+                }
+            );
+        }
+
+        if (_settingsService.IncreaseBrightnessOffsetHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.IncreaseBrightnessOffsetHotKey,
+                () =>
+                {
+                    BrightnessOffset += Math.Min(
+                        0.05,
+                        _settingsService.MaximumBrightness - TargetConfiguration.Brightness
+                    );
+                }
+            );
+        }
+
+        if (_settingsService.DecreaseBrightnessOffsetHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.DecreaseBrightnessOffsetHotKey,
+                () =>
+                {
+                    BrightnessOffset += Math.Max(
+                        -0.05,
+                        _settingsService.MinimumBrightness - TargetConfiguration.Brightness
+                    );
+                }
+            );
+        }
+
+        if (_settingsService.ResetConfigurationOffsetHotKey != HotKey.None)
+        {
+            _hotKeyService.RegisterHotKey(
+                _settingsService.ResetConfigurationOffsetHotKey,
+                ResetConfigurationOffset
+            );
+        }
+    }
+
+    private void UpdateInstant()
+    {
+        // If in cycle preview mode, advance quickly until the full cycle has been reached
+        if (IsCyclePreviewEnabled)
+        {
+            // Cycle is supposed to end 1 full day past the current real time
+            var targetInstant = DateTimeOffset.Now + TimeSpan.FromDays(1);
+
+            Instant = Instant.StepTo(targetInstant, TimeSpan.FromMinutes(5));
+            if (Instant >= targetInstant)
+                IsCyclePreviewEnabled = false;
+        }
+        // Otherwise, synchronize the instant with the system clock
+        else
+        {
+            Instant = DateTimeOffset.Now;
+        }
+    }
+
+    private void UpdateConfiguration()
+    {
+        var isSmooth =
+            !IsCyclePreviewEnabled
+            && CurrentConfiguration != TargetConfiguration
+            && _settingsService.IsConfigurationSmoothingEnabled
+            && _settingsService.ConfigurationSmoothingMaxDuration.TotalSeconds >= 0.1;
+
+        if (isSmooth)
+        {
+            // Check if the target configuration has changed since the last transition started
+            if (
+                _configurationSmoothingTarget != TargetConfiguration
+                || _configurationSmoothingSource is null
+            )
+            {
+                _configurationSmoothingSource = CurrentConfiguration;
+                _configurationSmoothingTarget = TargetConfiguration;
+            }
+
+            var brightnessDelta = Math.Abs(
+                _configurationSmoothingTarget.Value.Brightness
+                    - _configurationSmoothingSource.Value.Brightness
+            );
+
+            var brightnessStep = Math.Max(
+                brightnessDelta
+                    / _settingsService.ConfigurationSmoothingMaxDuration.TotalSeconds
+                    * _updateConfigurationTimer.Interval.TotalSeconds,
+                0.08
+            );
+
+            var temperatureDelta = Math.Abs(
+                _configurationSmoothingTarget.Value.Temperature
+                    - _configurationSmoothingSource.Value.Temperature
+            );
+
+            var temperatureStep = Math.Max(
+                temperatureDelta
+                    / _settingsService.ConfigurationSmoothingMaxDuration.TotalSeconds
+                    * _updateConfigurationTimer.Interval.TotalSeconds,
+                30
+            );
+
+            CurrentConfiguration = CurrentConfiguration.StepTo(
+                TargetConfiguration,
+                temperatureStep,
+                brightnessStep
+            );
+        }
+        else
+        {
+            CurrentConfiguration = TargetConfiguration;
+            _configurationSmoothingSource = null;
+            _configurationSmoothingTarget = null;
+        }
+
+        _gammaService.SetGamma(CurrentConfiguration);
+    }
+
+    private void UpdateIsPaused()
+    {
+        bool IsPausedByFullScreen() =>
+            _settingsService.IsPauseWhenFullScreenEnabled
+            && _externalApplicationService.IsForegroundApplicationFullScreen();
+
+        bool IsPausedByWhitelistedApplication() =>
+            _settingsService.IsApplicationWhitelistEnabled
+            && _settingsService.WhitelistedApplications is not null
+            && _settingsService.WhitelistedApplications.Contains(
+                _externalApplicationService.TryGetForegroundApplication()
+            );
+
+        IsPaused = IsPausedByFullScreen() || IsPausedByWhitelistedApplication();
+    }
+
+    public override Task InitializeAsync()
+    {
+        _updateInstantTimer.Start();
+        _updateConfigurationTimer.Start();
+        _updateIsPausedTimer.Start();
+
+        // Hack: feign property changes to refresh the tray icon
+        OnAllPropertiesChanged();
+
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private void DisableTemporarily(TimeSpan duration)
+    {
+        IsEnabled = false;
+        _enableAfterDelayRegistration?.Dispose();
+        _enableAfterDelayRegistration = Timer.QueueDelayedAction(
+            duration,
+            () => Dispatcher.UIThread.Post(() => IsEnabled = true)
+        );
+    }
+
+    [RelayCommand]
+    private void DisableUntilSunrise()
+    {
+        var now = DateTimeOffset.Now;
+        var timeUntilSunrise = SolarTimes.Sunrise.NextAfter(now) - now;
+        DisableTemporarily(timeUntilSunrise);
+    }
+
+    [RelayCommand]
+    private void Toggle() => IsEnabled = !IsEnabled;
+
+    [RelayCommand]
+    private void ResetConfigurationOffset()
+    {
+        TemperatureOffset = 0;
+        BrightnessOffset = 0;
+    }
+
+    // Preset modes
+
+    public IReadOnlyList<ColorPreset> Presets => ColorPresets.All;
+
+    public string? ActivePresetId => _settingsService.ActivePresetId;
+
+    public bool IsPresetActive => ActivePresetId is not null;
+
+    /// <summary>
+    /// Returns the color configuration of the currently active preset mode,
+    /// or <c>null</c> when no preset mode is active.
+    /// </summary>
+    public ColorConfiguration? TryGetActivePresetConfiguration()
+    {
+        if (!ColorPresets.TryGet(_settingsService.ActivePresetId, out var preset))
+            return null;
+
+        // The "Custom" preset mode uses the color configuration defined by the user
+        return preset.Id == ColorPresets.Custom.Id
+            ? _settingsService.CustomPresetConfiguration
+            : new ColorConfiguration(preset.Temperature, preset.Brightness, preset.Saturation);
+    }
+
+    [RelayCommand]
+    private void TogglePreset(ColorPreset preset)
+    {
+        // Clicking the active preset again returns to the automatic day/night cycle
+        _settingsService.ActivePresetId =
+            _settingsService.ActivePresetId == preset.Id ? null : preset.Id;
+
+        OnPresetChanged();
+    }
+
+    [RelayCommand]
+    private void ClearPreset()
+    {
+        if (_settingsService.ActivePresetId is null)
+            return;
+
+        _settingsService.ActivePresetId = null;
+        OnPresetChanged();
+    }
+
+    [RelayCommand]
+    private void ApplyPresetById(string? id)
+    {
+        if (!ColorPresets.TryGet(id, out var preset))
+            return;
+
+        if (_settingsService.ActivePresetId == preset.Id)
+            return;
+
+        _settingsService.ActivePresetId = preset.Id;
+        OnPresetChanged();
+    }
+
+    private void OnPresetChanged()
+    {
+        _settingsService.Save();
+
+        OnPropertyChanged(nameof(ActivePresetId));
+        OnPropertyChanged(nameof(IsPresetActive));
+        OnPropertyChanged(nameof(TargetConfiguration));
+        OnPropertyChanged(nameof(CycleState));
+        OnPropertyChanged(nameof(StatusText));
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _eventSubscription.Dispose();
+
+            _updateInstantTimer.Dispose();
+            _updateConfigurationTimer.Dispose();
+            _updateIsPausedTimer.Dispose();
+
+            _enableAfterDelayRegistration?.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+}

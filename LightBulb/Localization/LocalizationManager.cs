@@ -1,0 +1,262 @@
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
+using LightBulb.Services;
+using PowerKit;
+using PowerKit.Extensions;
+
+namespace LightBulb.Localization;
+
+public partial class LocalizationManager : ObservableObject, IDisposable
+{
+    private readonly IDisposable _eventSubscription;
+
+    public LocalizationManager(SettingsService settingsService)
+    {
+        _eventSubscription = Disposable.Merge(
+            settingsService.WatchProperty(o => o.Language, v => Language = v, true),
+            this.WatchProperty(
+                o => o.Language,
+                _ =>
+                {
+                    foreach (var propertyName in EnglishLocalization.Keys)
+                        OnPropertyChanged(propertyName);
+                }
+            )
+        );
+    }
+
+    [ObservableProperty]
+    public partial Language Language { get; set; } = Language.System;
+
+    private string Get([CallerMemberName] string? key = null)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return string.Empty;
+
+        var localization = Language switch
+        {
+            Language.System =>
+                CultureInfo.CurrentUICulture.ThreeLetterISOLanguageName.ToLowerInvariant() switch
+                {
+                    "ukr" => UkrainianLocalization,
+                    "deu" => GermanLocalization,
+                    "fra" => FrenchLocalization,
+                    "spa" => SpanishLocalization,
+                    "zho"
+                        when CultureInfo
+                            .CurrentUICulture.GetSelfAndParents()
+                            .Any(c =>
+                                string.Equals(c.Name, "zh-Hans", StringComparison.OrdinalIgnoreCase)
+                            ) => ChineseSimplifiedLocalization,
+                    "zho"
+                        when CultureInfo
+                            .CurrentUICulture.GetSelfAndParents()
+                            .Any(c =>
+                                string.Equals(c.Name, "zh-Hant", StringComparison.OrdinalIgnoreCase)
+                            ) => ChineseTraditionalLocalization,
+                    _ => EnglishLocalization,
+                },
+            Language.Ukrainian => UkrainianLocalization,
+            Language.German => GermanLocalization,
+            Language.French => FrenchLocalization,
+            Language.Spanish => SpanishLocalization,
+            Language.ChineseSimplified => ChineseSimplifiedLocalization,
+            Language.ChineseTraditional => ChineseTraditionalLocalization,
+            _ => EnglishLocalization,
+        };
+
+        if (
+            localization.TryGetValue(key, out var value)
+            || EnglishLocalization.TryGetValue(key, out value)
+        )
+        {
+            return value;
+        }
+
+        return $"Missing localization for '{key}'";
+    }
+
+    public void Dispose() => _eventSubscription.Dispose();
+}
+
+public partial class LocalizationManager
+{
+    // ---- Dashboard ----
+
+    public string SunsetLabel => Get();
+    public string SunriseLabel => Get();
+    public string SunsetTransitionTooltip => Get();
+    public string SunriseTransitionTooltip => Get();
+    public string OffsetTooltipHeader => Get();
+    public string TemperatureOffsetLabel => Get();
+    public string BrightnessOffsetLabel => Get();
+    public string ClickToResetLabel => Get();
+    public string OffsetLabel => Get();
+
+    // ---- Preset modes ----
+
+    public string PresetModesLabel => Get();
+    public string PresetAutoName => Get();
+    public string PresetAutoTooltip => Get();
+    public string PresetReadingName => Get();
+    public string PresetOfficeName => Get();
+    public string PresetNightName => Get();
+    public string PresetMovieName => Get();
+    public string PresetCodeName => Get();
+    public string PresetGameName => Get();
+    public string PresetEyeCareName => Get();
+    public string PresetCustomName => Get();
+
+    // ---- Break reminder ----
+
+    public string BreakTitle => Get();
+    public string BreakMessage => Get();
+    public string BreakSkipButton => Get();
+    public string BreakPostponeButton => Get();
+    public string BreakReminderLabel => Get();
+    public string BreakReminderTooltip => Get();
+    public string BreakWorkDurationLabel => Get();
+    public string BreakWorkDurationTooltip => Get();
+    public string BreakDurationLabel => Get();
+    public string BreakDurationTooltip => Get();
+    public string TrayTakeBreakMenuItem => Get();
+
+    // ---- Main window ----
+
+    public string ToggleLightBulbTooltip => Get();
+    public string HideToTrayTooltip => Get();
+    public string PreviewText => Get();
+    public string StopPreviewTooltip => Get();
+    public string StartPreviewTooltip => Get();
+    public string SettingsText => Get();
+    public string OpenSettingsTooltip => Get();
+
+    // ---- Settings dialog ----
+
+    public string ResetButton => Get();
+    public string ResetTooltip => Get();
+    public string CancelButton => Get();
+    public string SaveButton => Get();
+
+    // ---- Settings tabs ----
+
+    public string GeneralTabName => Get();
+    public string LocationTabName => Get();
+    public string AdvancedTabName => Get();
+    public string AppWhitelistTabName => Get();
+    public string HotkeysTabName => Get();
+
+    // ---- Advanced settings tab ----
+
+    public string ThemeLabel => Get();
+    public string ThemeTooltip => Get();
+    public string LanguageLabel => Get();
+    public string LanguageTooltip => Get();
+    public string StartWithWindowsLabel => Get();
+    public string StartWithWindowsTooltip => Get();
+    public string AutoUpdateLabel => Get();
+    public string AutoUpdateTooltip => Get();
+    public string DefaultToDayConfigLabel => Get();
+    public string DefaultToDayConfigTooltip => Get();
+    public string PauseWhenFullscreenLabel => Get();
+    public string PauseWhenFullscreenTooltip => Get();
+    public string GammaSmoothingLabel => Get();
+    public string GammaSmoothingTooltip => Get();
+    public string GammaPollingLabel => Get();
+    public string GammaPollingTooltip => Get();
+
+    // ---- General settings tab ----
+
+    public string DayTemperatureLabel => Get();
+    public string DayTemperatureTooltip => Get();
+    public string NightTemperatureLabel => Get();
+    public string NightTemperatureTooltip => Get();
+    public string DayBrightnessLabel => Get();
+    public string DayBrightnessTooltip => Get();
+    public string NightBrightnessLabel => Get();
+    public string NightBrightnessTooltip => Get();
+    public string TransitionDurationLabel => Get();
+    public string TransitionDurationTooltip => Get();
+    public string TransitionOffsetLabel => Get();
+    public string TransitionOffsetTooltip => Get();
+
+    // ---- Location settings tab ----
+
+    public string SolarConfigLabel => Get();
+    public string ManualLabel => Get();
+    public string ManualTooltip => Get();
+    public string LocationBasedLabel => Get();
+    public string LocationBasedTooltip => Get();
+    public string SunriseTimeLabel => Get();
+    public string SunsetTimeLabel => Get();
+    public string YourLocationLabel => Get();
+    public string AutoDetectLocationTooltip => Get();
+    public string LocationQueryTooltip => Get();
+    public string SetLocationTooltip => Get();
+    public string LocationErrorText => Get();
+
+    // ---- Hot key settings tab ----
+
+    public string ToggleLightBulbHotkeyLabel => Get();
+    public string ToggleLightBulbHotkeyTooltip => Get();
+    public string ToggleWindowLabel => Get();
+    public string ToggleWindowHotkeyTooltip => Get();
+    public string IncreaseTemperatureOffsetLabel => Get();
+    public string IncreaseTemperatureOffsetTooltip => Get();
+    public string DecreaseTemperatureOffsetLabel => Get();
+    public string DecreaseTemperatureOffsetTooltip => Get();
+    public string IncreaseBrightnessOffsetLabel => Get();
+    public string IncreaseBrightnessOffsetTooltip => Get();
+    public string DecreaseBrightnessOffsetLabel => Get();
+    public string DecreaseBrightnessOffsetTooltip => Get();
+    public string ResetOffsetLabel => Get();
+    public string ResetOffsetHotkeyTooltip => Get();
+
+    // ---- Application whitelist settings tab ----
+
+    public string AppWhitelistLabel => Get();
+    public string RefreshAppsTooltip => Get();
+    public string PauseForWhitelistedTooltip => Get();
+
+    // ---- Tray icon context menu ----
+
+    public string TrayShowMenuItem => Get();
+    public string TrayHideMenuItem => Get();
+    public string TraySettingsMenuItem => Get();
+    public string TrayEnableMenuItem => Get();
+    public string TrayDisableMenuItem => Get();
+    public string TrayDisableTemporarilyMenuItem => Get();
+    public string TrayDisableUntilSunriseMenuItem => Get();
+    public string TrayDisableFor1DayMenuItem => Get();
+    public string TrayDisableFor12HoursMenuItem => Get();
+    public string TrayDisableFor6HoursMenuItem => Get();
+    public string TrayDisableFor3HoursMenuItem => Get();
+    public string TrayDisableFor1HourMenuItem => Get();
+    public string TrayDisableFor30MinutesMenuItem => Get();
+    public string TrayDisableFor15MinutesMenuItem => Get();
+    public string TrayDisableFor5MinutesMenuItem => Get();
+    public string TrayDisableFor1MinuteMenuItem => Get();
+    public string TrayExitMenuItem => Get();
+
+    public string TrayTooltipDisabled => Get();
+
+    // ---- Dialog messages ----
+
+    public string UpdateAvailableTitle => Get();
+    public string UpdateAvailableMessage => Get();
+    public string InstallButton => Get();
+    public string CloseButton => Get();
+    public string LearnMoreButton => Get();
+    public string UnstableBuildTitle => Get();
+    public string UnstableBuildMessage => Get();
+    public string SeeReleasesButton => Get();
+    public string LimitedGammaRangeTitle => Get();
+    public string LimitedGammaRangeMessage => Get();
+    public string FixButton => Get();
+    public string WelcomeTitle => Get();
+    public string WelcomeMessage => Get();
+    public string OkButton => Get();
+}

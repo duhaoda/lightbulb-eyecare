@@ -1,0 +1,93 @@
+using System;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Onova;
+using Onova.Exceptions;
+using Onova.Services;
+
+namespace LightBulb.Services;
+
+public class UpdateService(SettingsService settingsService) : IDisposable
+{
+    private readonly IUpdateManager? _updateManager = StartOptions.Current.IsAutoUpdateAllowed
+        ? new UpdateManager(
+            new GithubPackageResolver(
+                // This fork publishes its own releases; pointing this at the upstream
+                // repository would offer users the wrong (unmodified) build.
+                "duhaoda",
+                "lightbulb-eyecare",
+                // Examples:
+                // LightBulb.win-arm64.zip
+                // LightBulb.win-x64.zip
+                // LightBulb.linux-x64.zip
+                $"LightBulb.{RuntimeInformation.RuntimeIdentifier}.zip"
+            ),
+            new ZipPackageExtractor()
+        )
+        : null;
+
+    public async Task<Version?> CheckForUpdatesAsync()
+    {
+        if (_updateManager is null || !settingsService.IsAutoUpdateEnabled)
+            return null;
+
+        var check = await _updateManager.CheckForUpdatesAsync();
+        return check.CanUpdate ? check.LastVersion : null;
+    }
+
+    public Version? TryGetLastPreparedUpdate()
+    {
+        if (_updateManager is null || !settingsService.IsAutoUpdateEnabled)
+            return null;
+
+        var version = _updateManager.GetPreparedUpdates().Max();
+        if (version <= _updateManager.Updatee.Version)
+            return null;
+
+        return version;
+    }
+
+    public async Task PrepareUpdateAsync(Version version)
+    {
+        if (_updateManager is null || !settingsService.IsAutoUpdateEnabled)
+            return;
+
+        try
+        {
+            if (version == TryGetLastPreparedUpdate())
+                return;
+
+            await _updateManager.PrepareUpdateAsync(version);
+        }
+        catch (UpdaterAlreadyLaunchedException)
+        {
+            // Ignore race conditions
+        }
+        catch (LockFileNotAcquiredException)
+        {
+            // Ignore race conditions
+        }
+    }
+
+    public void FinalizeUpdate(Version version)
+    {
+        if (_updateManager is null || !settingsService.IsAutoUpdateEnabled)
+            return;
+
+        try
+        {
+            _updateManager.LaunchUpdater(version);
+        }
+        catch (UpdaterAlreadyLaunchedException)
+        {
+            // Ignore race conditions
+        }
+        catch (LockFileNotAcquiredException)
+        {
+            // Ignore race conditions
+        }
+    }
+
+    public void Dispose() => _updateManager?.Dispose();
+}
